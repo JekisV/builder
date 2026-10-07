@@ -27,7 +27,7 @@ on:
       target_name:
         description: 'Target Name for test build'
         required: false
-        default: 'r3d'
+        default: 'rb03'
         type: string
       package_dir:
         description: 'Package Dir for test build'

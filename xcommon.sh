@@ -1,8 +1,8 @@
 #!/bin/bash
 
 XSUPPORTEDVER=23
-XREPOADDR=https://github.com/openwrt-xiaomi
-XDEFBRANCH=xq-23.05.0
+XREPOADDR=https://github.com/JekisV
+XDEFBRANCH=xq-25.12.6
 
 logmsg() {
 	echo "$@"

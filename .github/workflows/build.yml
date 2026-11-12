@@ -61,9 +61,9 @@ env:
   TAG_SUFFIX: ${{ github.event.inputs.fake_build == 'true' && '-fake' || github.event.inputs.test_build == 'true' && '-test' || '' }}
   TARGET_NAME: ${{ github.event.inputs.target_name }}
   G_PKG_DIR: ${{ github.event.inputs.package_dir }}
-  REPO_URL: https://github.com/openwrt-xiaomi/openwrt
-  REPO_LNK: openwrt-xiaomi/openwrt
-  REPO_BRANCH: xq-25.12
+  REPO_URL: https://github.com/JekisV/openwrt
+  REPO_LNK: JekisV/openwrt
+  REPO_BRANCH: xq-25.12.6
   TAG_PREFIX: v25-
   TZ: UTC
   DEVICE_NAME: unknown
@@ -749,5 +749,5 @@ jobs:
           name: '${{ env.REL_NAME }}'
           body: |
             ${{ env.REL_DESC }}
-            author: [remittor](https://github.com/remittor)
+            author: [JekisV](https://github.com/JekisV)
           files: ./public/*.zip

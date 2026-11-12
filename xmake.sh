@@ -183,47 +183,6 @@ function build_target {
 		fi
 	fi
 
-	AWG_KMOD_MK=$XDIR/package/feeds/_amneziawg/kmod-amneziawg/Makefile
-	if [ -f $AWG_KMOD_MK ]; then
-		if grep "876bf7571e47e349d0e86b70c244330b470d9642" $AWG_KMOD_MK >/dev/null ; then
-			sed -i 's/PKG_SOURCE_VERSION:=876bf7571e47e349d0e86b70c244330b470d9642/PKG_SOURCE_VERSION:=b96e12d00112dbee9d51d18d8438aa991cec0f6a/g' $AWG_KMOD_MK
-		fi
-	fi
-
-	PODKOP_DIR=$XDIR/package/feeds/_podkop
-	if [ -d $PODKOP_DIR ]; then
-		PODKOP_PATCH=
-		PODKOP_MK=$PODKOP_DIR/podkop/Makefile
-		if [ -f $PODKOP_MK ] && grep -q '+sing-box' $PODKOP_MK ; then
-			sed -i 's/+sing-box / /g' $PODKOP_MK
-			sed -i 's/CONFLICTS:=.*/CONFLICTS:=/g' $PODKOP_MK
-			PODKOP_PATCH="$PODKOP_PATCH (del depend sing-box)"
-		fi
-		PODKOP_SH=$PODKOP_DIR/podkop/files/usr/bin/podkop
-		if [ -f $PODKOP_SH ] && ! grep -q '(which sing-box)' $PODKOP_SH ; then
-			sed -i '/,\\"dns_configured\\":/i [ -z "$(which sing-box)" ] && status="not installed"' $PODKOP_SH
-			PODKOP_PATCH="$PODKOP_PATCH (status for sing-box)"
-		fi
-		if [ -f $PODKOP_MK ] && grep -q 'PODKOP_VERSION' $PODKOP_MK ; then
-			PKGVERLIST=$( git ls-remote --tags https://github.com/itdoginfo/podkop.git | awk -F/ '{print $3}' | grep -Ev '^v' | sort -V | tail -n 2 )
-			VER_PREV=$( sed -n '1p' <<< "$PKGVERLIST" )
-			VER_LATEST=$( sed -n '2p' <<< "$PKGVERLIST" )
-			[ -z "$VER_LATEST" ] && { echo "ERROR: cannot detect version of podkop!"; exit 1; }
-			sed -i 's/PKG_VERSION :=.*/PKG_VERSION:='$VER_LATEST'/g' $PODKOP_MK
-			PODKOP_PATCH="$PODKOP_PATCH (set ver $VER_LATEST)"
-		fi
-		PODKOP_MK=$PODKOP_DIR/luci-app-podkop/Makefile
-		if [ -f $PODKOP_MK ] && grep -q 'PODKOP_VERSION' $PODKOP_MK ; then
-			PKGVERLIST=$( git ls-remote --tags https://github.com/itdoginfo/podkop.git | awk -F/ '{print $3}' | grep -Ev '^v' | sort -V | tail -n 2 )
-			VER_PREV=$( sed -n '1p' <<< "$PKGVERLIST" )
-			VER_LATEST=$( sed -n '2p' <<< "$PKGVERLIST" )
-			[ -z "$VER_LATEST" ] && { echo "ERROR: cannot detect version of podkop!"; exit 1; }
-			sed -i 's/PKG_VERSION :=.*/PKG_VERSION:='$VER_LATEST'/g' $PODKOP_MK
-			PODKOP_PATCH="$PODKOP_PATCH (Set Ver $VER_LATEST)"
-		fi
-		[ "$PODKOP_PATCH" != "" ] && echo ">>> podkop patched !!! $PODKOP_PATCH"
-	fi
-
 	DROPBEAR_DIR=$XDIR/package/network/services/dropbear
 	DROPBEAR_MK=$DROPBEAR_DIR/Makefile
 	TMP_DROPBEAR_DIR=$XDIR/_dropbear2024

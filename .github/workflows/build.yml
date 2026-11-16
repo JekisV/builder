@@ -1,6 +1,9 @@
 name: build
 
 on:
+  push:
+    tags:
+      - 'v25-[0-9][0-9][0-9][0-9][0-9][0-9]'
   workflow_dispatch:
     inputs:
       use_cache:
@@ -89,6 +92,17 @@ jobs:
       target_name: ${{ env.TARGET_NAME }}
       fake_build: ${{ env.FAKE_BUILD }}
     steps:
+      - name: Validate run mode
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          INP_TEST_BUILD: ${{ github.event.inputs.test_build }}
+          INP_FAKE_BUILD: ${{ github.event.inputs.fake_build }}
+        run: |
+          if [ "$INP_TEST_BUILD" != true ] && [ "$INP_FAKE_BUILD" != true ]; then
+              echo "::error::Manual run allows only test_build or fake_build. For a release push the tag ${TAG_PREFIX}YYMMDD"
+              exit 1
+          fi
+
       - name: Get repo data via GH API
         id: gh
         env:
@@ -100,6 +114,10 @@ jobs:
           REPO_DATE=$(gh api repos/$REPO_LNK/commits/$BRANCH --jq '.commit.committer.date')
           BUILD_DATE=$( date --utc +'%y%m%d' )
           FW_DATE=$( date --utc +'%Y-%m-%d' )
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+              BUILD_DATE=${GITHUB_REF_NAME#$TAG_PREFIX}
+              FW_DATE="20${BUILD_DATE:0:2}-${BUILD_DATE:2:2}-${BUILD_DATE:4:2}"
+          fi
           TAG=$TAG_PREFIX$BUILD_DATE
           echo "REPO_DATE=$REPO_DATE" >> $GITHUB_ENV
           echo "BUILD_DATE=$BUILD_DATE" >> $GITHUB_ENV
@@ -173,7 +191,7 @@ jobs:
         exclude:
           - { isTest: true }
         include:
-          - target: ${{ github.event.inputs.target_name }}
+          - target: ${{ github.event.inputs.target_name || 'rb03' }}
     steps:
       - name: Initialization environment
         env:
@@ -678,6 +696,7 @@ jobs:
 
   release:
     needs: [ check, build ]
+    if: github.event_name == 'push' && github.ref_type == 'tag'
     permissions:
       contents: write
     runs-on: ubuntu-24.04
@@ -743,9 +762,10 @@ jobs:
       - name: Upload assets
         uses: softprops/action-gh-release@v2
         with:
-          draft: ${{ env.TEST_BUILD == 'true' || github.event.inputs.fake_build  == 'true' }}
-          prerelease: true
-          tag_name: ${{ env.REL_TAG }}${{ env.TAG_SUFFIX }}
+          draft: false
+          prerelease: false
+          make_latest: true
+          tag_name: ${{ env.REL_TAG }}
           name: '${{ env.REL_NAME }}'
           body: |
             ${{ env.REL_DESC }}

@@ -60,6 +60,7 @@ on:
         type: string
 
 env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   TEST_BUILD: ${{ github.event.inputs.test_build == 'true' }}
   TAG_SUFFIX: ${{ github.event.inputs.fake_build == 'true' && '-fake' || github.event.inputs.test_build == 'true' && '-test' || '' }}
   TARGET_NAME: ${{ github.event.inputs.target_name }}
